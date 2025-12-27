@@ -1,9 +1,22 @@
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+export const runtime = 'nodejs'
+
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) return null
+  return new OpenAI({ apiKey })
+}
 
 export async function POST(request: Request) {
   const { query } = await request.json();
+  const openai = getOpenAIClient()
+  if (!openai) {
+    return Response.json(
+      { error: 'Missing OPENAI_API_KEY' },
+      { status: 500 }
+    )
+  }
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
